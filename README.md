@@ -1,5 +1,7 @@
 # GoCoCo Reporting
 
+<p align="center"><img src="docs/goreport.png" width="50%"></p>
+
 `gococo-reporting` is a small Go library and CLI for generating a single self-contained HTML report for BDD-style test results.
 
 The output is designed to be easy to share and easy to open offline:
