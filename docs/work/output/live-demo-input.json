@@ -1,0 +1,175 @@
+[
+  {
+    "id": "csv-processing-live",
+    "name": "CSV processing in memory",
+    "keyword": "Feature",
+    "uri": "demo/csv_processing.feature",
+    "description": "A richer preview dataset for layout work, with longer timings and mixed outcomes.",
+    "tags": [
+      { "name": "@demo" },
+      { "name": "@report-preview" }
+    ],
+    "elements": [
+      {
+        "id": "sum-monthly-revenue",
+        "name": "Sum monthly revenue across filtered orders",
+        "type": "scenario",
+        "keyword": "Scenario",
+        "tags": [
+          { "name": "@green-path" }
+        ],
+        "steps": [
+          {
+            "keyword": "Given",
+            "name": "an orders dataset loaded from the March export",
+            "match": { "location": "csv_processing.feature:4" },
+            "result": { "status": "passed", "duration": 63000000000 }
+          },
+          {
+            "keyword": "Given",
+            "name": "all status values are normalized to lowercase",
+            "match": { "location": "csv_processing.feature:5" },
+            "result": { "status": "passed", "duration": 42000000000 }
+          },
+          {
+            "keyword": "When",
+            "name": "I filter only paid orders from the east region",
+            "match": { "location": "csv_processing.feature:6" },
+            "result": { "status": "passed", "duration": 105000000000 }
+          },
+          {
+            "keyword": "And",
+            "name": "I sum the amount column excluding refunds",
+            "match": { "location": "csv_processing.feature:7" },
+            "result": { "status": "passed", "duration": 73000000000 }
+          },
+          {
+            "keyword": "Then",
+            "name": "the total revenue should be 1280",
+            "match": { "location": "csv_processing.feature:8" },
+            "result": { "status": "passed", "duration": 22000000000 }
+          },
+          {
+            "keyword": "Then",
+            "name": "the dashboard should show 32 matching records",
+            "match": { "location": "csv_processing.feature:9" },
+            "result": { "status": "passed", "duration": 18000000000 }
+          }
+        ]
+      },
+      {
+        "id": "reject-unknown-status-filter",
+        "name": "Reject unknown status filter",
+        "type": "scenario",
+        "keyword": "Scenario",
+        "tags": [
+          { "name": "@failure-path" }
+        ],
+        "steps": [
+          {
+            "keyword": "Given",
+            "name": "an orders dataset loaded from the April export",
+            "match": { "location": "csv_processing.feature:13" },
+            "result": { "status": "passed", "duration": 51000000000 }
+          },
+          {
+            "keyword": "Given",
+            "name": "the filter UI is configured with allowed statuses",
+            "match": { "location": "csv_processing.feature:14" },
+            "result": { "status": "passed", "duration": 27000000000 }
+          },
+          {
+            "keyword": "When",
+            "name": "I filter orders by status archived",
+            "match": { "location": "csv_processing.feature:15" },
+            "result": {
+              "status": "failed",
+              "duration": 83000000000,
+              "error_message": "unknown status \"archived\"\nexpected one of: paid, pending, failed"
+            }
+          },
+          {
+            "keyword": "Then",
+            "name": "the API should return a validation error",
+            "match": { "location": "csv_processing.feature:16" },
+            "result": { "status": "skipped", "duration": 0 }
+          },
+          {
+            "keyword": "Then",
+            "name": "the previous filter selection should remain visible",
+            "match": { "location": "csv_processing.feature:17" },
+            "result": { "status": "skipped", "duration": 0 }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "export-audit-live",
+    "name": "Export and audit trail",
+    "keyword": "Feature",
+    "uri": "demo/export_audit.feature",
+    "description": "Second feature used to preview pending and undefined branches.",
+    "tags": [
+      { "name": "@demo" },
+      { "name": "@audit" }
+    ],
+    "elements": [
+      {
+        "id": "generate-weekly-export",
+        "name": "Generate weekly export package",
+        "type": "scenario",
+        "keyword": "Scenario",
+        "steps": [
+          {
+            "keyword": "Given",
+            "name": "a weekly summary has been computed",
+            "match": { "location": "export_audit.feature:4" },
+            "result": { "status": "passed", "duration": 121000000000 }
+          },
+          {
+            "keyword": "When",
+            "name": "I export the summary as csv and json",
+            "match": { "location": "export_audit.feature:5" },
+            "result": { "status": "passed", "duration": 184000000000 }
+          },
+          {
+            "keyword": "Then",
+            "name": "both files should be persisted under the audit directory",
+            "match": { "location": "export_audit.feature:6" },
+            "result": { "status": "passed", "duration": 34000000000 }
+          }
+        ]
+      },
+      {
+        "id": "publish-audit-digest",
+        "name": "Publish audit digest",
+        "type": "scenario",
+        "keyword": "Scenario",
+        "tags": [
+          { "name": "@pending" }
+        ],
+        "steps": [
+          {
+            "keyword": "Given",
+            "name": "an export package is ready for publishing",
+            "match": { "location": "export_audit.feature:10" },
+            "result": { "status": "passed", "duration": 43000000000 }
+          },
+          {
+            "keyword": "When",
+            "name": "I push the digest to the internal audit queue",
+            "match": { "location": "export_audit.feature:11" },
+            "result": { "status": "pending", "duration": 61000000000 }
+          },
+          {
+            "keyword": "Then",
+            "name": "the audit dashboard should display a signed delivery receipt",
+            "match": { "location": "export_audit.feature:12" },
+            "result": { "status": "undefined", "duration": 0 }
+          }
+        ]
+      }
+    ]
+  }
+]

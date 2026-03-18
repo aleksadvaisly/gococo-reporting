@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>badge-on-gist BDD Report</title>
+  <style>
+    :root {
+      --bg: #f7f3ef;
+      --panel: rgba(255, 252, 249, 0.82);
+      --panel-strong: #fffaf6;
+      --ink: #4c4550;
+      --muted: #7a7182;
+      --line: rgba(122, 113, 130, 0.16);
+      --shadow: 0 18px 44px rgba(146, 131, 154, 0.12);
+      --passed-bg: #dcefe6;
+      --passed-fg: #4e6f61;
+      --failed-bg: #efdede;
+      --failed-fg: #8c6567;
+      --skipped-bg: #ece7f6;
+      --skipped-fg: #726487;
+      --pending-bg: #f5ead9;
+      --pending-fg: #8a7353;
+      --undefined-bg: #e5edf6;
+      --undefined-fg: #5f7288;
+      --accent-a: #f1dfe6;
+      --accent-b: #dce8f0;
+      --accent-c: #e7eddc;
+      --radius-xl: 11px;
+      --radius-lg: 9px;
+      --radius-md: 7px;
+      --radius-sm: 6px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html, body {
+      margin: 0;
+      min-height: 100%;
+      background:
+        radial-gradient(circle at top left, rgba(241, 223, 230, 0.9), transparent 28%),
+        radial-gradient(circle at top right, rgba(220, 232, 240, 0.92), transparent 30%),
+        linear-gradient(180deg, #f9f4ef 0%, #f7f3ef 40%, #f0ece7 100%);
+      color: var(--ink);
+      font-family: "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Georgia, serif;
+    }
+
+    body {
+      padding: 16px 10px 28px;
+    }
+
+    .page {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: grid;
+      gap: 12px;
+    }
+
+    .hero,
+    .panel {
+      border: 1px solid var(--line);
+      background: var(--panel);
+      backdrop-filter: blur(10px);
+      box-shadow: var(--shadow);
+    }
+
+    .hero {
+      border-radius: var(--radius-xl);
+      padding: 14px;
+      display: grid;
+      gap: 9px;
+    }
+
+    .hero-top {
+      display: grid;
+      gap: 6px;
+    }
+
+    .eyebrow {
+      font-family: "Avenir Next", "Helvetica Neue", Helvetica, sans-serif;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+
+    h1, h2, h3, summary {
+      margin: 0;
+      font-weight: 600;
+    }
+
+    h1 {
+      font-size: clamp(2.3rem, 4vw, 4rem);
+      line-height: 0.95;
+    }
+
+    h2 {
+      font-size: 1.3rem;
+    }
+
+    .meta-grid,
+    .summary-grid,
+    .failures-grid,
+    .feature-grid,
+    .tags,
+    .step-meta {
+      display: grid;
+      gap: 7px;
+    }
+
+    .meta-grid {
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    }
+
+    .meta-card,
+    .summary-card,
+    .failure-card,
+    .feature-card,
+    .scenario-shell,
+    .step {
+      border-radius: var(--radius-lg);
+      background: var(--panel-strong);
+      border: 1px solid var(--line);
+    }
+
+    .meta-card,
+    .summary-card,
+    .failure-card {
+      padding: 9px;
+    }
+
+    .meta-card strong {
+      display: block;
+      margin-bottom: 3px;
+      font-family: "Avenir Next", "Helvetica Neue", Helvetica, sans-serif;
+      font-size: 0.8rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .input-files {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+    }
+
+    .summary-grid {
+      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+    }
+
+    .summary-card {
+      display: grid;
+      gap: 2px;
+      padding: 7px;
+    }
+
+    .summary-card .label {
+      color: var(--muted);
+      font-family: "Avenir Next", "Helvetica Neue", Helvetica, sans-serif;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-size: 0.72rem;
+    }
+
+    .summary-card .value {
+      font-size: 1.35rem;
+      line-height: 1;
+    }
+
+    .summary-card .detail {
+      color: var(--muted);
+      font-size: 0.82rem;
+    }
+
+    .summary-top {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .panel {
+      border-radius: var(--radius-xl);
+      padding: 12px;
+      display: grid;
+      gap: 9px;
+    }
+
+    .section-head {
+      display: flex;
+      gap: 6px;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .controls {
+      display: grid;
+      gap: 6px;
+    }
+
+    .control-grid {
+      display: grid;
+      gap: 6px;
+      grid-template-columns: minmax(220px, 1.6fr) minmax(220px, 2fr);
+    }
+
+    .search,
+    .status-row {
+      border-radius: var(--radius-md);
+      border: 1px solid var(--line);
+      background: rgba(255, 250, 246, 0.88);
+      padding: 5px 6px;
+    }
+
+    .search input {
+      width: 100%;
+      border: 0;
+      background: transparent;
+      color: var(--ink);
+      font-size: 1rem;
+      outline: none;
+      font-family: "Avenir Next", "Helvetica Neue", Helvetica, sans-serif;
+    }
+
+    .status-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+    }
+
+    button.filter-chip,
+    .pill {
+      border-radius: 20px;
+      border: 0;
+      padding: 5px 7px;
+      font-size: 0.92rem;
+      line-height: 1;
+      font-family: "Avenir Next", "Helvetica Neue", Helvetica, sans-serif;
+    }
+
+    button.filter-chip {
+      cursor: pointer;
+      background: rgba(122, 113, 130, 0.1);
+      color: var(--ink);
+      transition: transform 140ms ease, background 140ms ease;
+    }
+
+    button.filter-chip:hover,
+    button.filter-chip.active {
+      transform: translateY(-1px);
+      background: rgba(122, 113, 130, 0.18);
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      white-space: nowrap;
+    }
+
+    .passed { background: var(--passed-bg); color: var(--passed-fg); }
+    .failed { background: var(--failed-bg); color: var(--failed-fg); }
+    .skipped { background: var(--skipped-bg); color: var(--skipped-fg); }
+    .pending { background: var(--pending-bg); color: var(--pending-fg); }
+    .undefined { background: var(--undefined-bg); color: var(--undefined-fg); }
+
+    .failures-grid {
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    }
+
+    .failure-card {
+      display: grid;
+      gap: 6px;
+    }
+
+    .failure-card .path {
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    .feature-grid {
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      align-items: start;
+    }
+
+    .feature-card {
+      padding: 9px;
+      display: grid;
+      gap: 8px;
+    }
+
+    .feature-card[data-status="passed"],
+    .scenario-shell[data-status="passed"],
+    .step[data-status="passed"] {
+      background: rgba(220, 239, 230, 0.34);
+    }
+
+    .feature-head,
+    .scenario-summary,
+    .step-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 6px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .status-line {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .feature-title {
+      display: grid;
+      gap: 3px;
+    }
+
+    .subtle {
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    .tags {
+      grid-template-columns: repeat(auto-fit, minmax(96px, max-content));
+      justify-content: start;
+    }
+
+    details.scenario-shell {
+      padding: 7px;
+      overflow: hidden;
+    }
+
+    details.scenario-shell summary {
+      list-style: none;
+      cursor: pointer;
+    }
+
+    details.scenario-shell summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .scenario-body {
+      display: grid;
+      gap: 6px;
+      padding-top: 6px;
+    }
+
+    .steps {
+      display: grid;
+      gap: 5px;
+    }
+
+    .step {
+      padding: 6px 7px;
+      display: grid;
+      gap: 5px;
+    }
+
+    .step-copy {
+      display: grid;
+      gap: 2px;
+    }
+
+    .step-title {
+      font-family: "Avenir Next", "Helvetica Neue", Helvetica, sans-serif;
+      font-size: 0.96rem;
+    }
+
+    .error-box {
+      white-space: pre-wrap;
+      word-break: break-word;
+      padding: 6px;
+      border-radius: var(--radius-sm);
+      background: rgba(140, 101, 103, 0.08);
+      color: #725355;
+      font-family: Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      font-size: 0.85rem;
+    }
+
+    .empty-state {
+      border-radius: var(--radius-lg);
+      border: 1px dashed var(--line);
+      padding: 11px;
+      text-align: center;
+      color: var(--muted);
+      background: rgba(255, 250, 246, 0.52);
+    }
+
+    [hidden] {
+      display: none !important;
+    }
+
+    @media (max-width: 840px) {
+      body {
+        padding: 10px 7px 21px;
+      }
+
+      .hero,
+      .panel {
+        padding: 10px;
+      }
+
+      .control-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .feature-grid,
+      .summary-grid,
+      .failures-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <section class="hero">
+      <div class="hero-top">
+        <div class="eyebrow">Single-file cucumber report</div>
+        <h1>badge-on-gist BDD Report</h1>
+      </div>
+      <div class="meta-grid">
+        <div class="meta-card">
+          <strong>Generated</strong>
+          <div>2026-03-18 10:00:56 CET</div>
+        </div>
+        <div class="meta-card">
+          <strong>Input files</strong>
+          <div class="input-files">
+              <span class="pill undefined">badge-on-gist-bdd.jsonl</span>
+          </div>
+        </div>
+        <div class="meta-card">
+          <strong>Total duration</strong>
+          <div>0s</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="section-head">
+        <h2>Overview</h2>
+      </div>
+      <div class="summary-grid">
+        <article class="summary-card">
+          <div class="summary-top">
+            <div class="label">Features</div>
+            <div class="value">1</div>
+          </div>
+          <div class="detail">1 passed, 0 failed</div>
+        </article>
+        <article class="summary-card">
+          <div class="summary-top">
+            <div class="label">Scenarios</div>
+            <div class="value">2</div>
+          </div>
+          <div class="detail">2 passed, 0 failed</div>
+        </article>
+        <article class="summary-card">
+          <div class="summary-top">
+            <div class="label">Steps</div>
+            <div class="value">6</div>
+          </div>
+          <div class="detail">6 passed, 0 failed</div>
+        </article>
+        <article class="summary-card">
+          <div class="summary-top">
+            <div class="label">Pending</div>
+            <div class="value">0</div>
+          </div>
+          <div class="detail">Skipped 0, undefined 0</div>
+        </article>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="section-head">
+        <h2>Browse features</h2>
+        <div class="subtle"><span id="visible-feature-count">1</span> visible</div>
+      </div>
+      <div class="controls">
+        <div class="control-grid">
+          <label class="search">
+            <input id="feature-search" type="search" placeholder="Search feature, scenario, step or location">
+          </label>
+          <div class="status-row">
+            <button class="filter-chip active" type="button" data-filter="all">All</button>
+            <button class="filter-chip" type="button" data-filter="passed">Passed</button>
+            <button class="filter-chip" type="button" data-filter="failed">Failed</button>
+            <button class="filter-chip" type="button" data-filter="skipped">Skipped</button>
+            <button class="filter-chip" type="button" data-filter="pending">Pending</button>
+            <button class="filter-chip" type="button" data-filter="undefined">Undefined</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="empty-state" class="empty-state" hidden>No feature matches the current filter.</div>
+      <div id="feature-grid" class="feature-grid">
+        <article class="feature-card" data-feature-card data-search="csv processing in memory sum order amounts csv processing in memory filter paid orders" data-status="passed">
+          <div class="feature-head">
+            <div class="feature-title">
+              <h3>CSV processing in memory</h3>
+              <div class="subtle">github.com/aleksadvaisly/badge-on-gist/csvmem</div>
+            </div>
+            <div class="status-line">
+              <div class="subtle">0s</div>
+              <span class="pill passed">Passed</span>
+            </div>
+          </div>
+
+          <div class="step-meta">
+            <div class="subtle">2 scenarios</div>
+            <div class="subtle">6 steps</div>
+          </div>
+
+          <div class="steps">
+            <details class="scenario-shell" data-scenario data-search="given an orders dataset  when i sum &#34;amount&#34; column  then total amount should be 40 " data-status="passed">
+              <summary class="scenario-summary">
+                <div class="feature-title">
+                  <strong>Sum order amounts</strong>
+                  <div class="subtle">Scenario</div>
+                </div>
+                <div class="status-line">
+                  <div class="subtle">0s</div>
+                  <span class="pill passed">Passed</span>
+                </div>
+              </summary>
+              <div class="scenario-body">
+
+                <div class="steps">
+                  <div class="step" data-step data-search="Given an orders dataset " data-status="passed">
+                    <div class="step-head">
+                      <div class="step-title">Given Given an orders dataset</div>
+                      <div class="status-line">
+                        <div class="subtle">0s</div>
+                        <span class="pill passed">Passed</span>
+                      </div>
+                    </div>
+                    <div class="step-copy">
+                    </div>
+                  </div>
+                  <div class="step" data-step data-search="When I sum &#34;amount&#34; column " data-status="passed">
+                    <div class="step-head">
+                      <div class="step-title">When When I sum &#34;amount&#34; column</div>
+                      <div class="status-line">
+                        <div class="subtle">0s</div>
+                        <span class="pill passed">Passed</span>
+                      </div>
+                    </div>
+                    <div class="step-copy">
+                    </div>
+                  </div>
+                  <div class="step" data-step data-search="Then total amount should be 40 " data-status="passed">
+                    <div class="step-head">
+                      <div class="step-title">Then Then total amount should be 40</div>
+                      <div class="status-line">
+                        <div class="subtle">0s</div>
+                        <span class="pill passed">Passed</span>
+                      </div>
+                    </div>
+                    <div class="step-copy">
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </details>
+            <details class="scenario-shell" data-scenario data-search="given an orders dataset  when i filter orders by status &#34;paid&#34;  then remaining orders count should be 2 " data-status="passed">
+              <summary class="scenario-summary">
+                <div class="feature-title">
+                  <strong>Filter paid orders</strong>
+                  <div class="subtle">Scenario</div>
+                </div>
+                <div class="status-line">
+                  <div class="subtle">0s</div>
+                  <span class="pill passed">Passed</span>
+                </div>
+              </summary>
+              <div class="scenario-body">
+
+                <div class="steps">
+                  <div class="step" data-step data-search="Given an orders dataset " data-status="passed">
+                    <div class="step-head">
+                      <div class="step-title">Given Given an orders dataset</div>
+                      <div class="status-line">
+                        <div class="subtle">0s</div>
+                        <span class="pill passed">Passed</span>
+                      </div>
+                    </div>
+                    <div class="step-copy">
+                    </div>
+                  </div>
+                  <div class="step" data-step data-search="When I filter orders by status &#34;paid&#34; " data-status="passed">
+                    <div class="step-head">
+                      <div class="step-title">When When I filter orders by status &#34;paid&#34;</div>
+                      <div class="status-line">
+                        <div class="subtle">0s</div>
+                        <span class="pill passed">Passed</span>
+                      </div>
+                    </div>
+                    <div class="step-copy">
+                    </div>
+                  </div>
+                  <div class="step" data-step data-search="Then remaining orders count should be 2 " data-status="passed">
+                    <div class="step-head">
+                      <div class="step-title">Then Then remaining orders count should be 2</div>
+                      <div class="status-line">
+                        <div class="subtle">0s</div>
+                        <span class="pill passed">Passed</span>
+                      </div>
+                    </div>
+                    <div class="step-copy">
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </details>
+          </div>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    (() => {
+      const search = document.getElementById("feature-search");
+      const chips = Array.from(document.querySelectorAll(".filter-chip"));
+      const featureCards = Array.from(document.querySelectorAll("[data-feature-card]"));
+      const emptyState = document.getElementById("empty-state");
+      const visibleFeatureCount = document.getElementById("visible-feature-count");
+      let activeFilter = "all";
+
+      const normalize = (value) => (value || "").toLowerCase().trim();
+
+      const stepMatches = (step, query) => {
+        if (!query) return true;
+        return normalize(step.dataset.search).includes(query);
+      };
+
+      const scenarioMatches = (scenario, query, filter) => {
+        const scenarioStatus = scenario.dataset.status;
+        const steps = Array.from(scenario.querySelectorAll("[data-step]"));
+        let visibleSteps = 0;
+
+        steps.forEach((step) => {
+          const matchesQuery = stepMatches(step, query);
+          const matchesFilter = filter === "all" || step.dataset.status === filter || scenarioStatus === filter;
+          const visible = matchesQuery && matchesFilter;
+          step.hidden = !visible;
+          if (visible) visibleSteps += 1;
+        });
+
+        const matchesScenarioText = !query || normalize(scenario.dataset.search).includes(query);
+        const matchesScenarioStatus = filter === "all" || scenarioStatus === filter;
+        const visible = (matchesScenarioText && matchesScenarioStatus) || visibleSteps > 0;
+        scenario.hidden = !visible;
+        return visible;
+      };
+
+      const applyFilters = () => {
+        const query = normalize(search.value);
+        let visibleCards = 0;
+
+        featureCards.forEach((card) => {
+          const scenarios = Array.from(card.querySelectorAll("[data-scenario]"));
+          const featureMatchesText = !query || normalize(card.dataset.search).includes(query);
+          const featureMatchesStatus = activeFilter === "all" || card.dataset.status === activeFilter;
+
+          let visibleScenarios = 0;
+          scenarios.forEach((scenario) => {
+            if (scenarioMatches(scenario, query, activeFilter)) {
+              visibleScenarios += 1;
+            }
+          });
+
+          const visible = (featureMatchesText && featureMatchesStatus) || visibleScenarios > 0;
+          card.hidden = !visible;
+          if (visible) visibleCards += 1;
+        });
+
+        visibleFeatureCount.textContent = String(visibleCards);
+        emptyState.hidden = visibleCards !== 0;
+      };
+
+      chips.forEach((chip) => {
+        chip.addEventListener("click", () => {
+          activeFilter = chip.dataset.filter;
+          chips.forEach((item) => item.classList.toggle("active", item === chip));
+          applyFilters();
+        });
+      });
+
+      search.addEventListener("input", applyFilters);
+      applyFilters();
+    })();
+  </script>
+</body>
+</html>

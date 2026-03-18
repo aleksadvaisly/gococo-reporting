@@ -1,0 +1,138 @@
+[
+  {
+    "id": "checkout-flow",
+    "name": "Checkout flow",
+    "keyword": "Feature",
+    "uri": "features/checkout.feature",
+    "description": "The purchase path should stay legible even when a payment fails.",
+    "tags": [
+      { "name": "@critical" },
+      { "name": "@payments" }
+    ],
+    "elements": [
+      {
+        "id": "checkout-flow;successful-card-payment",
+        "name": "Successful card payment",
+        "type": "scenario",
+        "keyword": "Scenario",
+        "tags": [
+          { "name": "@happy-path" }
+        ],
+        "steps": [
+          {
+            "keyword": "Given",
+            "name": "a shopper with a full cart",
+            "match": { "location": "checkout_test.go:11" },
+            "result": { "status": "passed", "duration": 110000000 }
+          },
+          {
+            "keyword": "When",
+            "name": "the payment is authorized",
+            "match": { "location": "checkout_test.go:18" },
+            "result": { "status": "passed", "duration": 220000000 }
+          },
+          {
+            "keyword": "Then",
+            "name": "the order is confirmed",
+            "match": { "location": "checkout_test.go:24" },
+            "result": { "status": "passed", "duration": 90000000 }
+          }
+        ]
+      },
+      {
+        "id": "checkout-flow;declined-card",
+        "name": "Declined card",
+        "type": "scenario",
+        "keyword": "Scenario",
+        "steps": [
+          {
+            "keyword": "Given",
+            "name": "a shopper with a full cart",
+            "match": { "location": "checkout_test.go:11" },
+            "result": { "status": "passed", "duration": 110000000 }
+          },
+          {
+            "keyword": "When",
+            "name": "the gateway rejects the card",
+            "match": { "location": "checkout_test.go:41" },
+            "result": {
+              "status": "failed",
+              "duration": 330000000,
+              "error_message": "card declined\nexpected retry prompt to remain visible"
+            }
+          },
+          {
+            "keyword": "Then",
+            "name": "the shopper sees a retry message",
+            "match": { "location": "checkout_test.go:49" },
+            "result": { "status": "skipped", "duration": 0 }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "search-catalogue",
+    "name": "Search catalogue",
+    "keyword": "Feature",
+    "uri": "features/search.feature",
+    "description": "Search should expose intent, pagination and edge cases clearly.",
+    "tags": [
+      { "name": "@catalogue" }
+    ],
+    "elements": [
+      {
+        "id": "search-catalogue;returns-ranked-results",
+        "name": "Returns ranked results",
+        "type": "scenario",
+        "keyword": "Scenario",
+        "steps": [
+          {
+            "keyword": "Given",
+            "name": "a customer opens the search screen",
+            "match": { "location": "search_test.go:15" },
+            "result": { "status": "passed", "duration": 91000000 }
+          },
+          {
+            "keyword": "When",
+            "name": "the customer searches for oat milk",
+            "match": { "location": "search_test.go:21" },
+            "result": { "status": "passed", "duration": 170000000 }
+          },
+          {
+            "keyword": "Then",
+            "name": "the best matching products are shown first",
+            "match": { "location": "search_test.go:30" },
+            "result": { "status": "passed", "duration": 120000000 }
+          }
+        ]
+      },
+      {
+        "id": "search-catalogue;handles-empty-query",
+        "name": "Handles empty query",
+        "type": "scenario",
+        "keyword": "Scenario",
+        "steps": [
+          {
+            "keyword": "Given",
+            "name": "an empty search field",
+            "match": { "location": "search_test.go:40" },
+            "result": { "status": "passed", "duration": 50000000 }
+          },
+          {
+            "keyword": "When",
+            "name": "the customer submits the form",
+            "match": { "location": "search_test.go:45" },
+            "result": { "status": "pending", "duration": 0 }
+          },
+          {
+            "keyword": "Then",
+            "name": "a helpful hint is shown",
+            "match": { "location": "search_test.go:52" },
+            "result": { "status": "undefined", "duration": 0 }
+          }
+        ]
+      }
+    ]
+  }
+]
